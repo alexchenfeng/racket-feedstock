@@ -1,0 +1,65 @@
+schema_version: 1
+
+context:
+  version: "9.2"
+
+package:
+  name: racket
+  version: ${{ version }}
+
+source:
+  url: https://download.racket-lang.org/installers/9.2/racket-${{ version }}-src.tgz
+  sha256: ccf98fd81444dfb3e3d0fde86e8db0753a7e8568725d45c0189ce5c8b7c4bb19
+
+build:
+  number: 2
+  script:
+    - |
+      cd src
+      ./configure  --prefix=$PREFIX
+      make -j$(nproc)
+      make install
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - make
+  host:
+    - fontconfig
+    - cairo
+    - pango
+    - readline
+    - lz4-c
+    - zlib
+    - libffi
+
+tests:
+  - script:
+      - racket -e "\"hello world\""
+      - raco pkg install --auto --skip-installed racket-test db-test unstable-flonum-lib net-test
+      - racket -l tests/racket/contract/all
+      - raco test -l tests/json/json
+      - raco test -l tests/file/main
+      - raco test -l tests/net/head
+      - raco test -l tests/net/uri-codec
+      - raco test -l tests/net/url
+      - raco test -l tests/net/url-port
+      - raco test -l tests/net/encoders
+      - raco test -l tests/openssl/basic
+      - raco test -l tests/openssl/https
+      - raco test -l tests/match/main
+      - raco test -l tests/zo-path
+      - raco test -l tests/xml/test
+      - raco test -l tests/db/all-tests
+      - raco test -c tests/stxparse
+
+about:
+  license: LGPLLR
+  summary: The Racket Programming Language
+  homepage: http://racket-lang.org/
+
+extra:
+  recipe-maintainers:
+    - alexchenunix@gmail.com
+
